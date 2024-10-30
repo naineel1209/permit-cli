@@ -12,6 +12,7 @@ export const apiCall = async (
 	cookie?: string,
 	method = 'GET',
 	body?: string,
+	contentType?: string,
 ): Promise<ApiResponse> => {
 	const options: RequestInit = {
 		method,
@@ -20,6 +21,7 @@ export const apiCall = async (
 			Origin: 'https://app.permit.io',
 			Authorization: `Bearer ${token}`,
 			Cookie: cookie ?? '',
+			'Content-Type': contentType ?? '',
 		},
 	};
 

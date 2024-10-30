@@ -12,6 +12,8 @@ import {
 	TokenType,
 	tokenType,
 } from '../lib/auth.js';
+import UserInput from '../components/UserInput.js';
+import { generateSlug } from '../utils/utils.js';
 
 export const options = object({
 	key: string()
@@ -148,6 +150,22 @@ export default function Login({ options: { key, workspace } }: Props) {
 		setState('project');
 	};
 
+	const handleUserInputSubmit = async (name: string) => {
+		const { response } = await apiCall(
+			'v2/orgs',
+			accessToken ?? '',
+			cookie,
+			'POST',
+			JSON.stringify({
+				name,
+				key: generateSlug(name),
+			}),
+			'application/json',
+		);
+		setActiveOrg({ label: name, value: response.id });
+		setState('project');
+	};
+
 	useEffect(() => {
 		const authenticateUser = async () => {
 			setState('loggingIn');
@@ -185,11 +203,20 @@ export default function Login({ options: { key, workspace } }: Props) {
 				</Text>
 			)}
 			{state === 'org' &&
-				(orgs && orgs.length > 0 ? (
-					<>
-						<Text>Select an organization</Text>
-						<SelectInput items={orgs} onSelect={handleOrgSelect} />
-					</>
+				(orgs ? (
+					orgs.length > 0 ? (
+						<>
+							<Text>Select an organization</Text>
+							<SelectInput items={orgs} onSelect={handleOrgSelect} />
+						</>
+					) :
+						( // here we have no orgs to select - so we will prompt the user to create one
+							<UserInput
+								title="Create an organization"
+								description="Enter the name of the organization you want to create"
+								onSubmit={handleUserInputSubmit}
+							/>
+						)
 				) : (
 					<Text>
 						<Spinner type="dots" /> Loading Organizations
